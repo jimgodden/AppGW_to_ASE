@@ -1,7 +1,8 @@
 bicep build .\main.bicep
 
 $originalURL = "https://github.com/jimgodden/AppGW_to_ASE/blob/main/main.json"
-$shortURL = $originalURL.Substring(14)
+$removeBlob = $originalURL.Remove($originalURL.IndexOf("/blob"), 5)
+$shortURL = $removeBlob.Substring(14)
 $rawURL = "https://raw.githubusercontent${shortURL}"
 $encodedURL = [uri]::EscapeDataString($rawURL)
 
