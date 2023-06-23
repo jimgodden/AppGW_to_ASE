@@ -1,0 +1,891 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.18.4.5664",
+      "templateHash": "14998652262422734775"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "ASP_Name": {
+      "type": "string",
+      "defaultValue": "asp",
+      "metadata": {
+        "description": "Name of the App Service Plan"
+      }
+    },
+    "Vnet_Name": {
+      "type": "string",
+      "defaultValue": "vnet",
+      "metadata": {
+        "description": "Name of the Virtual Network for both the Application Gateway and App Service Environment"
+      }
+    },
+    "Vnet_AddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16",
+      "metadata": {
+        "description": "Address Prefix for the Virtual Network"
+      }
+    },
+    "Subnet_AppGW_AddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.1.0/25"
+    },
+    "Subnet_ASE_AddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.1.128/25"
+    },
+    "Website_Name": {
+      "type": "string",
+      "defaultValue": "[format('jamesgsite{0}', substring(uniqueString(resourceGroup().id), 0, 5))]",
+      "metadata": {
+        "description": "Name of the App Service"
+      }
+    },
+    "ASE_NSG_Name": {
+      "type": "string",
+      "defaultValue": "ase_nsg",
+      "metadata": {
+        "description": "Name of the Network Security Group on the App Service Environment subnet"
+      }
+    },
+    "AppGW_Name": {
+      "type": "string",
+      "defaultValue": "appgw",
+      "metadata": {
+        "description": "Name of the Application Gateway"
+      }
+    },
+    "AppGW_PIP_Name": {
+      "type": "string",
+      "defaultValue": "appgw_pip",
+      "metadata": {
+        "description": "Name of the Public IP Address resource of the Applciation Gateway"
+      }
+    },
+    "AppGW_PrivateIP_Address": {
+      "type": "string",
+      "defaultValue": "10.0.1.124",
+      "metadata": {
+        "description": "Private IP Address of the Private Frontend IP of the Application Gateway"
+      }
+    },
+    "AppGW_WAF_Name": {
+      "type": "string",
+      "defaultValue": "appgw_waf",
+      "metadata": {
+        "description": "Name of the Web Application Firewall of the Application Gateway"
+      }
+    },
+    "AppGW_NSG_Name": {
+      "type": "string",
+      "defaultValue": "appgw_nsg",
+      "metadata": {
+        "description": "Name of the Network Security Group on the Application Gateway subnet"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "network",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "Vnet_Name": {
+            "value": "[parameters('Vnet_Name')]"
+          },
+          "Vnet_AddressPrefix": {
+            "value": "[parameters('Vnet_AddressPrefix')]"
+          },
+          "Subnet_AppGW_AddressPrefix": {
+            "value": "[parameters('Subnet_AppGW_AddressPrefix')]"
+          },
+          "Subnet_ASE_AddressPrefix": {
+            "value": "[parameters('Subnet_ASE_AddressPrefix')]"
+          },
+          "AppGW_NSG_Name": {
+            "value": "[parameters('AppGW_NSG_Name')]"
+          },
+          "ASE_NSG_Name": {
+            "value": "[parameters('ASE_NSG_Name')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.18.4.5664",
+              "templateHash": "14373708635244365861"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Region that the resources are deployed to"
+              }
+            },
+            "Vnet_Name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Virtual Network for both the Application Gateway and App Service Environment"
+              }
+            },
+            "Vnet_AddressPrefix": {
+              "type": "string",
+              "metadata": {
+                "description": "Address Prefix for the Virtual Network"
+              }
+            },
+            "Subnet_AppGW_AddressPrefix": {
+              "type": "string"
+            },
+            "Subnet_ASE_AddressPrefix": {
+              "type": "string"
+            },
+            "AppGW_NSG_Name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Network Security Group on the Application Gateway subnet"
+              }
+            },
+            "ASE_NSG_Name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Network Security Group on the App Service Environment subnet"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/virtualNetworks",
+              "apiVersion": "2022-11-01",
+              "name": "[parameters('Vnet_Name')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "[parameters('Vnet_AddressPrefix')]"
+                  ]
+                },
+                "dhcpOptions": {
+                  "dnsServers": []
+                },
+                "subnets": [
+                  {
+                    "name": "ApplicationGateway_Subnet",
+                    "properties": {
+                      "addressPrefix": "[parameters('Subnet_AppGW_AddressPrefix')]",
+                      "networkSecurityGroup": {
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('AppGW_NSG_Name'))]"
+                      },
+                      "serviceEndpoints": [],
+                      "delegations": [],
+                      "privateEndpointNetworkPolicies": "Disabled",
+                      "privateLinkServiceNetworkPolicies": "Enabled"
+                    },
+                    "type": "Microsoft.Network/virtualNetworks/subnets"
+                  },
+                  {
+                    "name": "ASE_Subnet",
+                    "properties": {
+                      "addressPrefix": "[parameters('Subnet_ASE_AddressPrefix')]",
+                      "networkSecurityGroup": {
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('ASE_NSG_Name'))]"
+                      },
+                      "serviceEndpoints": [
+                        {
+                          "service": "Microsoft.Storage",
+                          "locations": [
+                            "*"
+                          ]
+                        }
+                      ],
+                      "delegations": [
+                        {
+                          "name": "delegation",
+                          "properties": {
+                            "serviceName": "Microsoft.Web/serverfarms"
+                          },
+                          "type": "Microsoft.Network/virtualNetworks/subnets/delegations"
+                        }
+                      ],
+                      "privateEndpointNetworkPolicies": "Disabled",
+                      "privateLinkServiceNetworkPolicies": "Enabled"
+                    },
+                    "type": "Microsoft.Network/virtualNetworks/subnets"
+                  }
+                ],
+                "virtualNetworkPeerings": [],
+                "enableDdosProtection": false
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('AppGW_NSG_Name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('ASE_NSG_Name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2022-11-01",
+              "name": "[parameters('AppGW_NSG_Name')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "securityRules": []
+              }
+            },
+            {
+              "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+              "apiVersion": "2022-11-01",
+              "name": "[format('{0}/{1}', parameters('AppGW_NSG_Name'), 'AllowGatewayManager')]",
+              "properties": {
+                "description": "Allow GatewayManager",
+                "protocol": "*",
+                "sourcePortRange": "*",
+                "destinationPortRange": "65200-65535",
+                "sourceAddressPrefix": "GatewayManager",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 1000,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('AppGW_NSG_Name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2022-11-01",
+              "name": "[parameters('ASE_NSG_Name')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "securityRules": []
+              }
+            }
+          ],
+          "outputs": {
+            "vnetName": {
+              "type": "string",
+              "value": "[parameters('Vnet_Name')]"
+            },
+            "appgwSubnetName": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('Vnet_Name')), '2022-11-01').subnets[0].name]"
+            },
+            "aseSubnetName": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('Vnet_Name')), '2022-11-01').subnets[1].name]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "site",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "ASP_Name": {
+            "value": "[parameters('ASP_Name')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "Vnet_Name": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'network'), '2022-09-01').outputs.vnetName.value]"
+          },
+          "ASE_Subnet_Name": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'network'), '2022-09-01').outputs.aseSubnetName.value]"
+          },
+          "Website_Name": {
+            "value": "[parameters('Website_Name')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.18.4.5664",
+              "templateHash": "16073872950798836731"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Region that the resources are deployed to"
+              }
+            },
+            "ASP_Name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the App Service Plan"
+              }
+            },
+            "Website_Name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the App Service"
+              }
+            },
+            "Vnet_Name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Virtual Network for both the Application Gateway and App Service Environment"
+              }
+            },
+            "ASE_Subnet_Name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Application Gateway subnet"
+              }
+            }
+          },
+          "variables": {
+            "ASE_to_Vnet_Link_Name": "[format('{0}_to_{1}', parameters('Website_Name'), parameters('Vnet_Name'))]",
+            "aseSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Vnet_Name'), parameters('ASE_Subnet_Name'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2022-09-01",
+              "name": "[parameters('ASP_Name')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "S1",
+                "tier": "Standard",
+                "size": "S1",
+                "family": "S",
+                "capacity": 1
+              },
+              "kind": "app",
+              "properties": {
+                "perSiteScaling": false,
+                "elasticScaleEnabled": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "zoneRedundant": false
+              }
+            },
+            {
+              "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+              "apiVersion": "2022-09-01",
+              "name": "[format('{0}/{1}', parameters('Website_Name'), 'ftp')]",
+              "properties": {
+                "allow": false
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('Website_Name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+              "apiVersion": "2022-09-01",
+              "name": "[format('{0}/{1}', parameters('Website_Name'), 'scm')]",
+              "properties": {
+                "allow": false
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('Website_Name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Web/sites/config",
+              "apiVersion": "2022-09-01",
+              "name": "[format('{0}/{1}', parameters('Website_Name'), 'web')]",
+              "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                  "Default.htm",
+                  "Default.html",
+                  "Default.asp",
+                  "index.htm",
+                  "index.html",
+                  "iisstart.htm",
+                  "default.aspx",
+                  "index.php",
+                  "hostingstart.html"
+                ],
+                "netFrameworkVersion": "v7.0",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "httpLoggingEnabled": false,
+                "acrUseManagedIdentityCreds": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "$jamesgbicepwebsite",
+                "scmType": "GitHubAction",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": true,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                  {
+                    "virtualPath": "/",
+                    "physicalPath": "site\\wwwroot",
+                    "preloadEnabled": true
+                  }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                  "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "vnetName": "[variables('ASE_to_Vnet_Link_Name')]",
+                "vnetRouteAllEnabled": true,
+                "vnetPrivatePortsCount": 0,
+                "publicNetworkAccess": "Enabled",
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                  {
+                    "ipAddress": "Any",
+                    "action": "Allow",
+                    "priority": 2147483647,
+                    "name": "Allow all",
+                    "description": "Allow all access"
+                  }
+                ],
+                "ipSecurityRestrictionsDefaultAction": "Allow",
+                "scmIpSecurityRestrictions": [
+                  {
+                    "ipAddress": "Any",
+                    "action": "Allow",
+                    "priority": 2147483647,
+                    "name": "Allow all",
+                    "description": "Allow all access"
+                  }
+                ],
+                "scmIpSecurityRestrictionsDefaultAction": "Allow",
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "scmMinTlsVersion": "1.2",
+                "ftpsState": "FtpsOnly",
+                "preWarmedInstanceCount": 0,
+                "elasticWebAppScaleLimit": 0,
+                "functionsRuntimeScaleMonitoringEnabled": false,
+                "minimumElasticInstanceCount": 0,
+                "azureStorageAccounts": {}
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('Website_Name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Web/sites/hostNameBindings",
+              "apiVersion": "2022-09-01",
+              "name": "[format('{0}/{1}', parameters('Website_Name'), format('{0}.azurewebsites.net', parameters('Website_Name')))]",
+              "properties": {
+                "siteName": "jamesgbicepwebsite",
+                "hostNameType": "Verified"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('Website_Name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2022-09-01",
+              "name": "[parameters('Website_Name')]",
+              "location": "[parameters('location')]",
+              "kind": "app",
+              "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                  {
+                    "name": "[format('{0}.azurewebsites.net', parameters('Website_Name'))]",
+                    "sslState": "Disabled",
+                    "hostType": "Standard"
+                  },
+                  {
+                    "name": "[format('{0}.scm.azurewebsites.net', parameters('Website_Name'))]",
+                    "sslState": "Disabled",
+                    "hostType": "Repository"
+                  }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('ASP_Name'))]",
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "vnetRouteAllEnabled": true,
+                "vnetImagePullEnabled": false,
+                "vnetContentShareEnabled": false,
+                "siteConfig": {
+                  "numberOfWorkers": 1,
+                  "acrUseManagedIdentityCreds": false,
+                  "alwaysOn": true,
+                  "http20Enabled": false,
+                  "functionAppScaleLimit": 0,
+                  "minimumElasticInstanceCount": 0
+                },
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": true,
+                "clientCertEnabled": false,
+                "clientCertMode": "Required",
+                "hostNamesDisabled": false,
+                "customDomainVerificationId": "3090E394E60D6B59248A348EFCDF9229D62149FBCB879BDCD211F73F69D00FFC",
+                "containerSize": 0,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": true,
+                "redundancyMode": "None",
+                "publicNetworkAccess": "Enabled",
+                "storageAccountRequired": false,
+                "virtualNetworkSubnetId": "[variables('aseSubnetID')]",
+                "keyVaultReferenceIdentity": "SystemAssigned"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('ASP_Name'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Web/sites/virtualNetworkConnections",
+              "apiVersion": "2022-09-01",
+              "name": "[format('{0}/{1}', parameters('Website_Name'), variables('ASE_to_Vnet_Link_Name'))]",
+              "properties": {
+                "vnetResourceId": "[variables('aseSubnetID')]",
+                "isSwift": true
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('Website_Name'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "websiteFQDN": {
+              "type": "string",
+              "value": "[format('{0}.azurewebsites.net', parameters('Website_Name'))]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'network')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "AppGW",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "AppGW_Name": {
+            "value": "[parameters('AppGW_Name')]"
+          },
+          "AppGW_PIP_Name": {
+            "value": "[parameters('AppGW_PIP_Name')]"
+          },
+          "AppGW_PrivateIP_Address": {
+            "value": "[parameters('AppGW_PrivateIP_Address')]"
+          },
+          "AppGW_WAF_Name": {
+            "value": "[parameters('AppGW_WAF_Name')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "Vnet_Name": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'network'), '2022-09-01').outputs.vnetName.value]"
+          },
+          "AppGW_Subnet_Name": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'network'), '2022-09-01').outputs.appgwSubnetName.value]"
+          },
+          "backendPoolFQDN": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'site'), '2022-09-01').outputs.websiteFQDN.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.18.4.5664",
+              "templateHash": "989019908085975650"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Region that the resources are deployed to"
+              }
+            },
+            "Vnet_Name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Virtual Network for both the Application Gateway and App Service Environment"
+              }
+            },
+            "AppGW_Subnet_Name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Application Gateway subnet"
+              }
+            },
+            "AppGW_Name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Application Gateway"
+              }
+            },
+            "AppGW_PIP_Name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Public IP Address resource of the Applciation Gateway"
+              }
+            },
+            "AppGW_PrivateIP_Address": {
+              "type": "string"
+            },
+            "AppGW_WAF_Name": {
+              "type": "string",
+              "metadata": {
+                "description": "Name of the Web Application Firewall of the Application Gateway"
+              }
+            },
+            "backendPoolFQDN": {
+              "type": "string",
+              "metadata": {
+                "description": "FQDN of the website in the backend pool of the Application Gateway"
+              }
+            }
+          },
+          "variables": {
+            "appGWSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Vnet_Name'), parameters('AppGW_Subnet_Name'))]",
+            "frontendID": "[resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', parameters('AppGW_Name'), 'fip_private')]",
+            "frontendPortID": "[resourceId('Microsoft.Network/applicationGateways/frontendPorts', parameters('AppGW_Name'), 'port_80')]",
+            "httpListenerID": "[resourceId('Microsoft.Network/applicationGateways/httpListeners', parameters('AppGW_Name'), 'http_listener')]",
+            "backendAddressPoolID": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools', parameters('AppGW_Name'), 'bep')]",
+            "backendHTTPSettingsID": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', parameters('AppGW_Name'), 'http-to-asp-settings')]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies",
+              "apiVersion": "2022-11-01",
+              "name": "[parameters('AppGW_WAF_Name')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "customRules": [],
+                "policySettings": {
+                  "requestBodyCheck": true,
+                  "maxRequestBodySizeInKb": 128,
+                  "fileUploadLimitInMb": 100,
+                  "state": "Enabled",
+                  "mode": "Detection",
+                  "requestBodyInspectLimitInKB": 128,
+                  "fileUploadEnforcement": true,
+                  "requestBodyEnforcement": true
+                },
+                "managedRules": {
+                  "managedRuleSets": [
+                    {
+                      "ruleSetType": "OWASP",
+                      "ruleSetVersion": "3.2",
+                      "ruleGroupOverrides": []
+                    },
+                    {
+                      "ruleSetType": "Microsoft_BotManagerRuleSet",
+                      "ruleSetVersion": "0.1",
+                      "ruleGroupOverrides": []
+                    }
+                  ],
+                  "exclusions": []
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "2022-11-01",
+              "name": "[parameters('AppGW_PIP_Name')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+              },
+              "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4,
+                "ipTags": []
+              }
+            },
+            {
+              "type": "Microsoft.Network/applicationGateways",
+              "apiVersion": "2022-11-01",
+              "name": "[parameters('AppGW_Name')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "sku": {
+                  "name": "WAF_v2",
+                  "tier": "WAF_v2"
+                },
+                "gatewayIPConfigurations": [
+                  {
+                    "name": "appGatewayIpConfig",
+                    "properties": {
+                      "subnet": {
+                        "id": "[variables('appGWSubnetID')]"
+                      }
+                    }
+                  }
+                ],
+                "sslCertificates": [],
+                "trustedRootCertificates": [],
+                "trustedClientCertificates": [],
+                "sslProfiles": [],
+                "frontendIPConfigurations": [
+                  {
+                    "name": "fip_pub",
+                    "properties": {
+                      "privateIPAllocationMethod": "Dynamic",
+                      "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('AppGW_PIP_Name'))]"
+                      }
+                    }
+                  },
+                  {
+                    "name": "fip_private",
+                    "properties": {
+                      "privateIPAddress": "[parameters('AppGW_PrivateIP_Address')]",
+                      "privateIPAllocationMethod": "Static",
+                      "subnet": {
+                        "id": "[variables('appGWSubnetID')]"
+                      }
+                    }
+                  }
+                ],
+                "frontendPorts": [
+                  {
+                    "name": "port_80",
+                    "properties": {
+                      "port": 80
+                    }
+                  }
+                ],
+                "backendAddressPools": [
+                  {
+                    "name": "bep",
+                    "properties": {
+                      "backendAddresses": [
+                        {
+                          "fqdn": "[parameters('backendPoolFQDN')]"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "loadDistributionPolicies": [],
+                "backendHttpSettingsCollection": [
+                  {
+                    "name": "http-to-asp-settings",
+                    "properties": {
+                      "port": 80,
+                      "protocol": "Http",
+                      "cookieBasedAffinity": "Disabled",
+                      "pickHostNameFromBackendAddress": false,
+                      "requestTimeout": 20
+                    }
+                  }
+                ],
+                "backendSettingsCollection": [],
+                "httpListeners": [
+                  {
+                    "name": "http_listener",
+                    "properties": {
+                      "frontendIPConfiguration": {
+                        "id": "[variables('frontendID')]"
+                      },
+                      "frontendPort": {
+                        "id": "[variables('frontendPortID')]"
+                      },
+                      "protocol": "Http",
+                      "hostNames": [],
+                      "requireServerNameIndication": false
+                    }
+                  }
+                ],
+                "listeners": [],
+                "urlPathMaps": [],
+                "requestRoutingRules": [
+                  {
+                    "name": "http-to-asp",
+                    "properties": {
+                      "ruleType": "Basic",
+                      "priority": 100,
+                      "httpListener": {
+                        "id": "[variables('httpListenerID')]"
+                      },
+                      "backendAddressPool": {
+                        "id": "[variables('backendAddressPoolID')]"
+                      },
+                      "backendHttpSettings": {
+                        "id": "[variables('backendHTTPSettingsID')]"
+                      }
+                    }
+                  }
+                ],
+                "routingRules": [],
+                "probes": [],
+                "rewriteRuleSets": [],
+                "redirectConfigurations": [],
+                "privateLinkConfigurations": [],
+                "enableHttp2": true,
+                "autoscaleConfiguration": {
+                  "minCapacity": 0,
+                  "maxCapacity": 2
+                },
+                "firewallPolicy": {
+                  "id": "[resourceId('Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies', parameters('AppGW_WAF_Name'))]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('AppGW_PIP_Name'))]",
+                "[resourceId('Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies', parameters('AppGW_WAF_Name'))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'network')]",
+        "[resourceId('Microsoft.Resources/deployments', 'site')]"
+      ]
+    }
+  ]
+}
