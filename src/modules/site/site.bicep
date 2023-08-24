@@ -13,10 +13,8 @@ var ASE_to_Vnet_Link_Name = '${Website_Name}_to_${Vnet_Name}'
 @description('Name of the Virtual Network for both the Application Gateway and App Service Environment')
 param Vnet_Name string
 
-@description('Name of the Application Gateway subnet')
-param ASE_Subnet_Name string
-
-var aseSubnetID = resourceId('Microsoft.Network/virtualNetworks/subnets', Vnet_Name, ASE_Subnet_Name)
+@description('Subnet ID of the Subnet that the App Service will be vnet injected into')
+param appServiceSubnetID string
 
 resource ASP 'Microsoft.Web/serverfarms@2022-09-01' = {
   name: ASP_Name
@@ -198,7 +196,7 @@ resource site 'Microsoft.Web/sites@2022-09-01' = {
     redundancyMode: 'None'
     publicNetworkAccess: 'Enabled'
     storageAccountRequired: false
-    virtualNetworkSubnetId: aseSubnetID // might not need this one since
+    virtualNetworkSubnetId: appServiceSubnetID // might not need this one since
     keyVaultReferenceIdentity: 'SystemAssigned'
   }
 }
@@ -207,7 +205,7 @@ resource ASE_Subnet_Link 'Microsoft.Web/sites/virtualNetworkConnections@2022-09-
   parent: site
   name: ASE_to_Vnet_Link_Name
   properties: {
-    vnetResourceId: aseSubnetID // Subnet 1 is the ASE subnet as of June 22nd 2023
+    vnetResourceId: appServiceSubnetID
     isSwift: true
   }
 }

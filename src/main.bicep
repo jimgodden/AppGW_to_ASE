@@ -36,7 +36,7 @@ module site './modules/site/site.bicep' = {
     ASP_Name: 'asp'
     location: location
     Vnet_Name: network.outputs.vnetName
-    ASE_Subnet_Name: network.outputs.appServiceSubnetID
+    appServiceSubnetID: network.outputs.appServiceSubnetID
     Website_Name: Website_Name
   }
 }

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.18.4.5664",
-      "templateHash": "11769153383713991294"
+      "templateHash": "12235603458289334540"
     }
   },
   "parameters": {
@@ -478,7 +478,7 @@
           "Vnet_Name": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'vnet'), '2022-09-01').outputs.vnetName.value]"
           },
-          "ASE_Subnet_Name": {
+          "appServiceSubnetID": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'vnet'), '2022-09-01').outputs.appServiceSubnetID.value]"
           },
           "Website_Name": {
@@ -492,7 +492,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.18.4.5664",
-              "templateHash": "2519214036950122239"
+              "templateHash": "3460064760537133464"
             }
           },
           "parameters": {
@@ -520,16 +520,15 @@
                 "description": "Name of the Virtual Network for both the Application Gateway and App Service Environment"
               }
             },
-            "ASE_Subnet_Name": {
+            "appServiceSubnetID": {
               "type": "string",
               "metadata": {
-                "description": "Name of the Application Gateway subnet"
+                "description": "Subnet ID of the Subnet that the App Service will be vnet injected into"
               }
             }
           },
           "variables": {
-            "ASE_to_Vnet_Link_Name": "[format('{0}_to_{1}', parameters('Website_Name'), parameters('Vnet_Name'))]",
-            "aseSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('Vnet_Name'), parameters('ASE_Subnet_Name'))]"
+            "ASE_to_Vnet_Link_Name": "[format('{0}_to_{1}', parameters('Website_Name'), parameters('Vnet_Name'))]"
           },
           "resources": [
             {
@@ -721,7 +720,7 @@
                 "redundancyMode": "None",
                 "publicNetworkAccess": "Enabled",
                 "storageAccountRequired": false,
-                "virtualNetworkSubnetId": "[variables('aseSubnetID')]",
+                "virtualNetworkSubnetId": "[parameters('appServiceSubnetID')]",
                 "keyVaultReferenceIdentity": "SystemAssigned"
               },
               "dependsOn": [
@@ -733,7 +732,7 @@
               "apiVersion": "2022-09-01",
               "name": "[format('{0}/{1}', parameters('Website_Name'), variables('ASE_to_Vnet_Link_Name'))]",
               "properties": {
-                "vnetResourceId": "[variables('aseSubnetID')]",
+                "vnetResourceId": "[parameters('appServiceSubnetID')]",
                 "isSwift": true
               },
               "dependsOn": [
