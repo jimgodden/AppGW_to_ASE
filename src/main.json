@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.18.4.5664",
-      "templateHash": "7504310854642201444"
+      "templateHash": "10680219635815723389"
     }
   },
   "parameters": {
@@ -513,7 +513,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.18.4.5664",
-              "templateHash": "3460064760537133464"
+              "templateHash": "13076972450419858485"
             }
           },
           "parameters": {
@@ -737,7 +737,7 @@
                 "customDomainVerificationId": "3090E394E60D6B59248A348EFCDF9229D62149FBCB879BDCD211F73F69D00FFC",
                 "containerSize": 0,
                 "dailyMemoryTimeQuota": 0,
-                "httpsOnly": true,
+                "httpsOnly": false,
                 "redundancyMode": "None",
                 "publicNetworkAccess": "Enabled",
                 "storageAccountRequired": false,
@@ -812,7 +812,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.18.4.5664",
-              "templateHash": "627520210459289051"
+              "templateHash": "3938802863542170772"
             }
           },
           "parameters": {
@@ -984,12 +984,11 @@
                       "port": 80,
                       "protocol": "Http",
                       "cookieBasedAffinity": "Disabled",
-                      "pickHostNameFromBackendAddress": false,
+                      "pickHostNameFromBackendAddress": true,
                       "requestTimeout": 20
                     }
                   }
                 ],
-                "backendSettingsCollection": [],
                 "httpListeners": [
                   {
                     "name": "http_listener",

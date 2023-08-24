@@ -45,7 +45,6 @@ resource ASP 'Microsoft.Web/serverfarms@2022-09-01' = {
 resource site_ftp_cred 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2022-09-01' = {
   parent: site
   name: 'ftp'
-  // location: location
   properties: {
     allow: true // was false and I couldn't connect to github
   }
@@ -54,7 +53,6 @@ resource site_ftp_cred 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2
 resource site_scm_cred 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2022-09-01' = {
   parent: site
   name: 'scm'
-  // location: location
   properties: {
     allow: true // was false and I couldn't connect to github
   }
@@ -63,7 +61,6 @@ resource site_scm_cred 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2
 resource site_config 'Microsoft.Web/sites/config@2022-09-01' = {
   parent: site
   name: 'web'
-  // location: location
   properties: {
     numberOfWorkers: 1
     defaultDocuments: [
@@ -192,7 +189,7 @@ resource site 'Microsoft.Web/sites@2022-09-01' = {
     customDomainVerificationId: '3090E394E60D6B59248A348EFCDF9229D62149FBCB879BDCD211F73F69D00FFC'
     containerSize: 0
     dailyMemoryTimeQuota: 0
-    httpsOnly: true
+    httpsOnly: false
     redundancyMode: 'None'
     publicNetworkAccess: 'Enabled'
     storageAccountRequired: false

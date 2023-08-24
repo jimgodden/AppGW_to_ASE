@@ -155,12 +155,11 @@ resource AppGW 'Microsoft.Network/applicationGateways@2022-11-01' = {
           port: 80
           protocol: 'Http'
           cookieBasedAffinity: 'Disabled'
-          pickHostNameFromBackendAddress: false
+          pickHostNameFromBackendAddress: true
           requestTimeout: 20
         }
       }
     ]
-    backendSettingsCollection: []
     httpListeners: [
       {
         name: 'http_listener'
