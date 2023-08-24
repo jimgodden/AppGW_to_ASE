@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.18.4.5664",
-      "templateHash": "6189913661867245271"
+      "templateHash": "7504310854642201444"
     }
   },
   "parameters": {
@@ -81,7 +81,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.18.4.5664",
-              "templateHash": "606849994313490269"
+              "templateHash": "3106251992310503804"
             }
           },
           "parameters": {
@@ -320,7 +320,6 @@
                       "networkSecurityGroup": {
                         "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('defaultNSG_Name'))]"
                       },
-                      "routeTable": {},
                       "delegations": [],
                       "privateEndpointNetworkPolicies": "Disabled",
                       "privateLinkServiceNetworkPolicies": "Enabled"
@@ -333,7 +332,6 @@
                       "networkSecurityGroup": {
                         "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('defaultNSG_Name'))]"
                       },
-                      "routeTable": {},
                       "delegations": [],
                       "privateEndpointNetworkPolicies": "Disabled",
                       "privateLinkServiceNetworkPolicies": "Disabled"
@@ -346,7 +344,6 @@
                       "networkSecurityGroup": {
                         "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'AppGW_NSG')]"
                       },
-                      "routeTable": {},
                       "delegations": [],
                       "privateEndpointNetworkPolicies": "Disabled",
                       "privateLinkServiceNetworkPolicies": "Enabled"
@@ -356,8 +353,9 @@
                     "name": "[parameters('subnet_AppServiceSubnet_Name')]",
                     "properties": {
                       "addressPrefix": "[parameters('subnet_AppServiceSubnet_AddressPrefix')]",
-                      "networkSecurityGroup": {},
-                      "routeTable": {},
+                      "networkSecurityGroup": {
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('defaultNSG_Name'))]"
+                      },
                       "delegations": [
                         {
                           "name": "delegation",

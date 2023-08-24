@@ -139,7 +139,6 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-09-01' = {
           networkSecurityGroup: {
             id: nsg.id
           }
-          routeTable: {}
           delegations: []
           privateEndpointNetworkPolicies: 'Disabled'
           privateLinkServiceNetworkPolicies: 'Enabled'
@@ -152,7 +151,6 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-09-01' = {
           networkSecurityGroup: {
             id: nsg.id
           }
-          routeTable: {}
           delegations: []
           privateEndpointNetworkPolicies: 'Disabled'
           privateLinkServiceNetworkPolicies: 'Disabled' // This has to be disabled for Private Link Service to be used in the subnet
@@ -165,7 +163,6 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-09-01' = {
           networkSecurityGroup: {
             id: AppGW_NSG.id
           }
-          routeTable: {}
           delegations: []
           privateEndpointNetworkPolicies: 'Disabled'
           privateLinkServiceNetworkPolicies: 'Enabled' 
@@ -175,8 +172,9 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-09-01' = {
         name: subnet_AppServiceSubnet_Name
         properties: {
           addressPrefix: subnet_AppServiceSubnet_AddressPrefix
-          networkSecurityGroup: {}
-          routeTable: {}
+          networkSecurityGroup: {
+            id: nsg.id
+          }
           delegations: [
             {
               name: 'delegation'
