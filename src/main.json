@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.18.4.5664",
-      "templateHash": "12235603458289334540"
+      "templateHash": "6189913661867245271"
     }
   },
   "parameters": {
@@ -81,7 +81,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.18.4.5664",
-              "templateHash": "2918622697357456534"
+              "templateHash": "606849994313490269"
             }
           },
           "parameters": {
@@ -320,9 +320,7 @@
                       "networkSecurityGroup": {
                         "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('defaultNSG_Name'))]"
                       },
-                      "routeTable": {
-                        "id": "[resourceId('Microsoft.Network/routeTables', parameters('routeTable_Name'))]"
-                      },
+                      "routeTable": {},
                       "delegations": [],
                       "privateEndpointNetworkPolicies": "Disabled",
                       "privateLinkServiceNetworkPolicies": "Enabled"
@@ -335,9 +333,7 @@
                       "networkSecurityGroup": {
                         "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('defaultNSG_Name'))]"
                       },
-                      "routeTable": {
-                        "id": "[resourceId('Microsoft.Network/routeTables', parameters('routeTable_Name'))]"
-                      },
+                      "routeTable": {},
                       "delegations": [],
                       "privateEndpointNetworkPolicies": "Disabled",
                       "privateLinkServiceNetworkPolicies": "Disabled"
@@ -348,11 +344,9 @@
                     "properties": {
                       "addressPrefix": "[parameters('subnet_ApplicationGatewaySubnet_AddressPrefix')]",
                       "networkSecurityGroup": {
-                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('defaultNSG_Name'))]"
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'AppGW_NSG')]"
                       },
-                      "routeTable": {
-                        "id": "[resourceId('Microsoft.Network/routeTables', parameters('routeTable_Name'))]"
-                      },
+                      "routeTable": {},
                       "delegations": [],
                       "privateEndpointNetworkPolicies": "Disabled",
                       "privateLinkServiceNetworkPolicies": "Enabled"
@@ -362,12 +356,8 @@
                     "name": "[parameters('subnet_AppServiceSubnet_Name')]",
                     "properties": {
                       "addressPrefix": "[parameters('subnet_AppServiceSubnet_AddressPrefix')]",
-                      "networkSecurityGroup": {
-                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('defaultNSG_Name'))]"
-                      },
-                      "routeTable": {
-                        "id": "[resourceId('Microsoft.Network/routeTables', parameters('routeTable_Name'))]"
-                      },
+                      "networkSecurityGroup": {},
+                      "routeTable": {},
                       "delegations": [
                         {
                           "name": "delegation",
@@ -385,6 +375,7 @@
                 "enableDdosProtection": false
               },
               "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'AppGW_NSG')]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('defaultNSG_Name'))]",
                 "[resourceId('Microsoft.Network/routeTables', parameters('routeTable_Name'))]"
               ]
@@ -404,6 +395,38 @@
               "name": "[parameters('defaultNSG_Name')]",
               "location": "[parameters('location')]",
               "properties": {}
+            },
+            {
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2022-11-01",
+              "name": "AppGW_NSG",
+              "location": "[parameters('location')]",
+              "properties": {
+                "securityRules": []
+              }
+            },
+            {
+              "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+              "apiVersion": "2022-11-01",
+              "name": "[format('{0}/{1}', 'AppGW_NSG', 'AllowGatewayManager')]",
+              "properties": {
+                "description": "Allow GatewayManager",
+                "protocol": "*",
+                "sourcePortRange": "*",
+                "destinationPortRange": "65200-65535",
+                "sourceAddressPrefix": "GatewayManager",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 1000,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'AppGW_NSG')]"
+              ]
             }
           ],
           "outputs": {

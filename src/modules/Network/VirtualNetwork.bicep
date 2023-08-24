@@ -139,9 +139,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-09-01' = {
           networkSecurityGroup: {
             id: nsg.id
           }
-          routeTable: {
-            id: routeTable.id
-          }
+          routeTable: {}
           delegations: []
           privateEndpointNetworkPolicies: 'Disabled'
           privateLinkServiceNetworkPolicies: 'Enabled'
@@ -154,9 +152,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-09-01' = {
           networkSecurityGroup: {
             id: nsg.id
           }
-          routeTable: {
-            id: routeTable.id
-          }
+          routeTable: {}
           delegations: []
           privateEndpointNetworkPolicies: 'Disabled'
           privateLinkServiceNetworkPolicies: 'Disabled' // This has to be disabled for Private Link Service to be used in the subnet
@@ -167,11 +163,9 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-09-01' = {
         properties: {
           addressPrefix: subnet_ApplicationGatewaySubnet_AddressPrefix
           networkSecurityGroup: {
-            id: nsg.id
+            id: AppGW_NSG.id
           }
-          routeTable: {
-            id: routeTable.id
-          }
+          routeTable: {}
           delegations: []
           privateEndpointNetworkPolicies: 'Disabled'
           privateLinkServiceNetworkPolicies: 'Enabled' 
@@ -181,12 +175,8 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-09-01' = {
         name: subnet_AppServiceSubnet_Name
         properties: {
           addressPrefix: subnet_AppServiceSubnet_AddressPrefix
-          networkSecurityGroup: {
-            id: nsg.id
-          }
-          routeTable: {
-            id: routeTable.id
-          }
+          networkSecurityGroup: {}
+          routeTable: {}
           delegations: [
             {
               name: 'delegation'
@@ -217,6 +207,34 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2022-09-01' = {
   name: defaultNSG_Name
   location: location
   properties: {
+  }
+}
+
+resource AppGW_NSG 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
+  name: 'AppGW_NSG'
+  location: location
+  properties: {
+    securityRules: []
+  }
+}
+
+resource AppGW_NSG_AppGWSpecificRule 'Microsoft.Network/networkSecurityGroups/securityRules@2022-11-01' = {
+  parent: AppGW_NSG
+  name: 'AllowGatewayManager'
+  properties: {
+    description: 'Allow GatewayManager'
+    protocol: '*'
+    sourcePortRange: '*'
+    destinationPortRange: '65200-65535'
+    sourceAddressPrefix: 'GatewayManager'
+    destinationAddressPrefix: '*'
+    access: 'Allow'
+    priority: 1000
+    direction: 'Inbound'
+    sourcePortRanges: []
+    destinationPortRanges: []
+    sourceAddressPrefixes: []
+    destinationAddressPrefixes: []
   }
 }
 
