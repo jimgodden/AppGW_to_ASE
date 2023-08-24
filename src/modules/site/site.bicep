@@ -49,7 +49,7 @@ resource site_ftp_cred 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2
   name: 'ftp'
   // location: location
   properties: {
-    allow: false
+    allow: true // was false and I couldn't connect to github
   }
 }
 
@@ -58,7 +58,7 @@ resource site_scm_cred 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2
   name: 'scm'
   // location: location
   properties: {
-    allow: false
+    allow: true // was false and I couldn't connect to github
   }
 }
 

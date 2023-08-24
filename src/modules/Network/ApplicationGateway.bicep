@@ -1,11 +1,11 @@
 @description('Region that the resources are deployed to')
 param location string
 
-@description('Name of the Virtual Network for both the Application Gateway and App Service Environment')
-param Vnet_Name string
+// @description('Name of the Virtual Network for both the Application Gateway and App Service Environment')
+// param Vnet_Name string
 
-@description('Name of the Application Gateway subnet')
-param AppGW_Subnet_Name string
+// @description('Name of the Application Gateway subnet')
+// param AppGW_Subnet_Name string
 
 @description('Name of the Application Gateway')
 param AppGW_Name string
@@ -15,13 +15,15 @@ param AppGW_PIP_Name string
 
 param AppGW_PrivateIP_Address string
 
+param AppGW_SubnetID string
+
 @description('Name of the Web Application Firewall of the Application Gateway')
 param AppGW_WAF_Name string
 
 @description('FQDN of the website in the backend pool of the Application Gateway')
 param backendPoolFQDN string
 
-var appGWSubnetID = resourceId('Microsoft.Network/virtualNetworks/subnets', Vnet_Name, AppGW_Subnet_Name)
+// var appGWSubnetID = resourceId('Microsoft.Network/virtualNetworks/subnets', Vnet_Name, AppGW_Subnet_Name)
 
 @description('Application Gateway sub resource IDs')
 var frontendID = resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', AppGW_Name, 'fip_private')
@@ -95,7 +97,7 @@ resource AppGW 'Microsoft.Network/applicationGateways@2022-11-01' = {
         name: 'appGatewayIpConfig'
         properties: {
           subnet: {
-            id: appGWSubnetID
+            id: AppGW_SubnetID
           }
         }
       }
@@ -120,7 +122,7 @@ resource AppGW 'Microsoft.Network/applicationGateways@2022-11-01' = {
           privateIPAddress: AppGW_PrivateIP_Address
           privateIPAllocationMethod: 'Static'
           subnet: {
-            id: appGWSubnetID
+            id: AppGW_SubnetID
           }
         }
       }
